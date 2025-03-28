@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 from fastapi import Request, Response, status
 from fastapi.security import APIKeyCookie
-
+from fastapi.responses import RedirectResponse
 from fastapi_users.authentication.transport.base import Transport
 from fastapi_users.openapi import OpenAPIResponseType
 
