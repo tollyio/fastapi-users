@@ -17,7 +17,7 @@ def get_auth_router(
     """Generate a router with login/logout routes for an authentication backend."""
     router = APIRouter()
     get_current_user_token = authenticator.current_user_token(
-        active=True, verified=requires_verification
+        active=False, verified=requires_verification
     )
 
     login_responses: OpenAPIResponseType = {
