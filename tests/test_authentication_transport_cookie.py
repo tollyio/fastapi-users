@@ -1,7 +1,7 @@
 import re
 
 import pytest
-from fastapi import Response, status
+from fastapi import Request, Response, status
 
 from fastapi_users.authentication.transport import CookieTransport
 
@@ -29,16 +29,15 @@ def cookie_transport(request) -> CookieTransport:
         cookie_httponly=httponly,
     )
 
-
 @pytest.mark.authentication
 @pytest.mark.asyncio
-async def test_get_login_response(cookie_transport: CookieTransport):
+async def test_get_login_response(cookie_transport: CookieTransport, get_request: Request):
     path = cookie_transport.cookie_path
     domain = cookie_transport.cookie_domain
     secure = cookie_transport.cookie_secure
     httponly = cookie_transport.cookie_httponly
 
-    response = await cookie_transport.get_login_response("TOKEN")
+    response = await cookie_transport.get_login_response("TOKEN", get_request)
 
     assert isinstance(response, Response)
     assert response.status_code == status.HTTP_204_NO_CONTENT
@@ -78,8 +77,8 @@ async def test_get_login_response(cookie_transport: CookieTransport):
 
 @pytest.mark.authentication
 @pytest.mark.asyncio
-async def test_get_logout_response(cookie_transport: CookieTransport):
-    response = await cookie_transport.get_logout_response()
+async def test_get_logout_response(cookie_transport: CookieTransport, get_request: Request):
+    response = await cookie_transport.get_logout_response(get_request)
 
     assert isinstance(response, Response)
     assert response.status_code == status.HTTP_204_NO_CONTENT

@@ -1,7 +1,7 @@
 from typing import Callable, Generic, Optional, cast
 
 import pytest
-from fastapi import Response
+from fastapi import Request, Response
 
 from fastapi_users import models
 from fastapi_users.authentication import (
@@ -52,10 +52,9 @@ def backend(
         name="mock", transport=transport, get_strategy=get_strategy
     )
 
-
 @pytest.mark.asyncio
 @pytest.mark.authentication
-async def test_logout(backend: AuthenticationBackend, user: UserModel):
+async def test_logout(backend: AuthenticationBackend, user: UserModel, get_request: Request):
     strategy = cast(Strategy, backend.get_strategy())
-    result = await backend.logout(strategy, user, "TOKEN")
+    result = await backend.logout(strategy, user, "TOKEN", get_request)
     assert isinstance(result, Response)

@@ -4,7 +4,7 @@ from typing import Any, cast
 import httpx
 import pytest
 import pytest_asyncio
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Response, status
 
 from fastapi_users.authentication import Authenticator
 from fastapi_users.router import ErrorCode, get_auth_router

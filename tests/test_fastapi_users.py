@@ -4,7 +4,7 @@ from typing import Optional
 import httpx
 import pytest
 import pytest_asyncio
-from fastapi import Depends, FastAPI, status
+from fastapi import Depends, FastAPI, Response, status
 
 from fastapi_users import FastAPIUsers, schemas
 from tests.conftest import IDType, User, UserCreate, UserModel, UserUpdate

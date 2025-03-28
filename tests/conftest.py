@@ -13,6 +13,7 @@ from httpx_oauth.oauth2 import OAuth2
 from pydantic import UUID4, SecretStr
 from pytest_mock import MockerFixture
 from starlette.datastructures import Headers
+from starlette.middleware.sessions import SessionMiddleware
 
 from fastapi_users import exceptions, models, schemas
 from fastapi_users.authentication import AuthenticationBackend, BearerTransport
@@ -507,7 +508,7 @@ class MockTransport(BearerTransport):
     def __init__(self, tokenUrl: str):
         super().__init__(tokenUrl)
 
-    async def get_logout_response(self, request: Request) -> Response:
+    async def get_logout_response(self, request: Request) -> Any:
         return Response()
 
     @staticmethod
@@ -556,12 +557,15 @@ def build_request(
         }
     )
     if body:
-
         async def request_body():
             return body
-
         request.body = request_body
+
+    # Add session middleware
+    middleware = SessionMiddleware(app=None, secret_key="test-secret")
+    middleware.process_request(request)
     return request
+
 
 def get_mock_authentication(name: str):
     return AuthenticationBackend(
