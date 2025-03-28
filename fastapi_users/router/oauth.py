@@ -64,6 +64,9 @@ def get_oauth_router(
         else:
             authorize_redirect_url = str(request.url_for(callback_route_name))
 
+        # store request referer url in session
+        request.session["oauth_redirect_url"] = request.headers.get("referer", "")
+
         state_data: dict[str, str] = {}
         state = generate_state_token(state_data, state_secret)
         authorization_url = await oauth_client.get_authorization_url(
@@ -147,7 +150,7 @@ def get_oauth_router(
             )
 
         # Authenticate
-        response = await backend.login(strategy, user)
+        response = await backend.login(strategy, user, request)
         await user_manager.on_after_login(user, request, response)
         return response
 

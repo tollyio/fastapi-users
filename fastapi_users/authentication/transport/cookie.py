@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 
-from fastapi import Response, status
+from fastapi import Request, Response, status
 from fastapi.security import APIKeyCookie
 
 from fastapi_users.authentication.transport.base import Transport
@@ -29,11 +29,18 @@ class CookieTransport(Transport):
         self.cookie_samesite = cookie_samesite
         self.scheme = APIKeyCookie(name=self.cookie_name, auto_error=False)
 
-    async def get_login_response(self, token: str) -> Response:
-        response = Response(status_code=status.HTTP_204_NO_CONTENT)
-        return self._set_login_cookie(response, token)
+    async def get_login_response(self, token: str, request: Request) -> Response:
+        redirect_url = request.session.get("oauth_redirect_url")
+        if redirect_url is not None and redirect_url.endswith("login"):
+            redirect_url = f"{redirect_url}/success"
+        logger.info("Redirect to %s", redirect_url)
 
-    async def get_logout_response(self) -> Response:
+        redirect = RedirectResponse(
+            url=redirect_url or f"{os.environ['FRONTEND_HOST_NAME']}/login/success"
+        )
+        return self._set_login_cookie(redirect, token)
+
+    async def get_logout_response(self, request: Request) -> Response:
         response = Response(status_code=status.HTTP_204_NO_CONTENT)
         return self._set_logout_cookie(response)
 

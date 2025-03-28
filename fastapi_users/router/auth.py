@@ -51,7 +51,7 @@ def get_auth_router(
         credentials: OAuth2PasswordRequestForm = Depends(),
         user_manager: BaseUserManager[models.UP, models.ID] = Depends(get_user_manager),
         strategy: Strategy[models.UP, models.ID] = Depends(backend.get_strategy),
-    ):
+    ) -> Response:
         user = await user_manager.authenticate(credentials)
 
         if user is None or not user.is_active:
@@ -64,7 +64,7 @@ def get_auth_router(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=ErrorCode.LOGIN_USER_NOT_VERIFIED,
             )
-        response = await backend.login(strategy, user)
+        response = await backend.login(strategy, user, request)
         await user_manager.on_after_login(user, request, response)
         return response
 
@@ -81,10 +81,11 @@ def get_auth_router(
         "/logout", name=f"auth:{backend.name}.logout", responses=logout_responses
     )
     async def logout(
+        request: Request,
         user_token: tuple[models.UP, str] = Depends(get_current_user_token),
         strategy: Strategy[models.UP, models.ID] = Depends(backend.get_strategy),
-    ):
+    ) -> Response:
         user, token = user_token
-        return await backend.logout(strategy, user, token)
+        return await backend.logout(strategy, user, token, request)
 
     return router

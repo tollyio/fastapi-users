@@ -59,6 +59,7 @@ features = [
 dependencies = [
     "pytest",
     "isort",
+    "itsdangerous",
     "pytest-asyncio",
     "mike",
     "mkdocs",
