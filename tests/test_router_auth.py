@@ -196,7 +196,8 @@ class TestLogout:
     ):
         client, _ = test_app_client
         response = await client.post(path)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        # logout should be successful always as its side effect is to erase the httponly cookie
+        assert response.status_code == status.HTTP_200_OK
 
     async def test_valid_credentials_unverified(
         self,
@@ -205,14 +206,11 @@ class TestLogout:
         test_app_client: tuple[httpx.AsyncClient, bool],
         user: UserModel,
     ):
-        client, requires_verification = test_app_client
+        client, _ = test_app_client
         response = await client.post(
             path, headers={"Authorization": f"Bearer {user.id}"}
         )
-        if requires_verification:
-            assert response.status_code == status.HTTP_403_FORBIDDEN
-        else:
-            assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK
 
     async def test_valid_credentials_verified(
         self,

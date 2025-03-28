@@ -1,6 +1,6 @@
-from typing import Generic
+from typing import Generic, Optional
 
-from fastapi import Request, Response, status
+from fastapi import Response, status
 
 from fastapi_users import models
 from fastapi_users.authentication.strategy import (
@@ -40,13 +40,13 @@ class AuthenticationBackend(Generic[models.UP, models.ID]):
         self.get_strategy = get_strategy
 
     async def login(
-        self, strategy: Strategy[models.UP, models.ID], user: models.UP, request: Request
+        self, strategy: Strategy[models.UP, models.ID], user: models.UP, redirect_url: Optional[str] = None
     ) -> Response:
         token = await strategy.write_token(user)
-        return await self.transport.get_login_response(token, request)
+        return await self.transport.get_login_response(token, redirect_url)
 
     async def logout(
-        self, strategy: Strategy[models.UP, models.ID], user: models.UP, token: str, request: Request
+        self, strategy: Strategy[models.UP, models.ID], user: models.UP, token: str
     ) -> Response:
         try:
             await strategy.destroy_token(token, user)
@@ -54,7 +54,7 @@ class AuthenticationBackend(Generic[models.UP, models.ID]):
             pass
 
         try:
-            response = await self.transport.get_logout_response(request)
+            response = await self.transport.get_logout_response()
         except TransportLogoutNotSupportedError:
             response = Response(status_code=status.HTTP_204_NO_CONTENT)
 

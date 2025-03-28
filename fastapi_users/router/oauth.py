@@ -57,7 +57,9 @@ def get_oauth_router(
         response_model=OAuth2AuthorizeResponse,
     )
     async def authorize(
-        request: Request, scopes: list[str] = Query(None)
+        request: Request,
+        scopes: list[str] = Query(None),
+        redirect_url: Optional[str] = Query(None)
     ) -> OAuth2AuthorizeResponse:
         if redirect_url is not None:
             authorize_redirect_url = redirect_url
@@ -68,6 +70,8 @@ def get_oauth_router(
         request.session["oauth_redirect_url"] = request.headers.get("referer", "")
 
         state_data: dict[str, str] = {}
+        if redirect_url:
+            state_data["redirect_url"] = redirect_url
         state = generate_state_token(state_data, state_secret)
         authorization_url = await oauth_client.get_authorization_url(
             authorize_redirect_url,
@@ -121,9 +125,11 @@ def get_oauth_router(
             )
 
         try:
-            decode_jwt(state, state_secret, [STATE_TOKEN_AUDIENCE])
+            state_data = decode_jwt(state, state_secret, [STATE_TOKEN_AUDIENCE])    
         except jwt.DecodeError:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+        redirect_url = state_data.get("redirect_url")
 
         try:
             user = await user_manager.oauth_callback(
@@ -195,6 +201,7 @@ def get_oauth_associate_router(
         request: Request,
         scopes: list[str] = Query(None),
         user: models.UP = Depends(get_current_active_user),
+        redirect_url: Optional[str] = Query(None)
     ) -> OAuth2AuthorizeResponse:
         if redirect_url is not None:
             authorize_redirect_url = redirect_url
@@ -202,6 +209,8 @@ def get_oauth_associate_router(
             authorize_redirect_url = str(request.url_for(callback_route_name))
 
         state_data: dict[str, str] = {"sub": str(user.id)}
+        if redirect_url:
+            state_data["redirect_url"] = redirect_url
         state = generate_state_token(state_data, state_secret)
         authorization_url = await oauth_client.get_authorization_url(
             authorize_redirect_url,

@@ -492,8 +492,8 @@ def get_user_manager(user_manager):
 
 
 @pytest.fixture
-def get_request() -> Request:
-    return build_request()
+def redirect_url() -> str:
+    return "http://localhost:3000/login"
 
 
 @pytest.fixture
@@ -508,7 +508,7 @@ class MockTransport(BearerTransport):
     def __init__(self, tokenUrl: str):
         super().__init__(tokenUrl)
 
-    async def get_logout_response(self, request: Request) -> Any:
+    async def get_logout_response(self) -> Any:
         return Response()
 
     @staticmethod

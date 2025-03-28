@@ -54,7 +54,7 @@ def backend(
 
 @pytest.mark.asyncio
 @pytest.mark.authentication
-async def test_logout(backend: AuthenticationBackend, user: UserModel, get_request: Request):
+async def test_logout(backend: AuthenticationBackend, user: UserModel):
     strategy = cast(Strategy, backend.get_strategy())
-    result = await backend.logout(strategy, user, "TOKEN", get_request)
+    result = await backend.logout(strategy, user, "TOKEN")
     assert isinstance(result, Response)

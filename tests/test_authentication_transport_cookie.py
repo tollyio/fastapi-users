@@ -1,7 +1,9 @@
 import re
 
 import pytest
-from fastapi import Request, Response, status
+from typing import Optional
+
+from fastapi import Response, status
 
 from fastapi_users.authentication.transport import CookieTransport
 
@@ -31,16 +33,16 @@ def cookie_transport(request) -> CookieTransport:
 
 @pytest.mark.authentication
 @pytest.mark.asyncio
-async def test_get_login_response(cookie_transport: CookieTransport, get_request: Request):
+async def test_get_login_response(cookie_transport: CookieTransport, redirect_url: Optional[str]):
     path = cookie_transport.cookie_path
     domain = cookie_transport.cookie_domain
     secure = cookie_transport.cookie_secure
     httponly = cookie_transport.cookie_httponly
 
-    response = await cookie_transport.get_login_response("TOKEN", get_request)
+    response = await cookie_transport.get_login_response("TOKEN", redirect_url)
 
     assert isinstance(response, Response)
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
 
     cookies = [header for header in response.raw_headers if header[0] == b"set-cookie"]
     assert len(cookies) == 1
@@ -77,8 +79,8 @@ async def test_get_login_response(cookie_transport: CookieTransport, get_request
 
 @pytest.mark.authentication
 @pytest.mark.asyncio
-async def test_get_logout_response(cookie_transport: CookieTransport, get_request: Request):
-    response = await cookie_transport.get_logout_response(get_request)
+async def test_get_logout_response(cookie_transport: CookieTransport):
+    response = await cookie_transport.get_logout_response()
 
     assert isinstance(response, Response)
     assert response.status_code == status.HTTP_204_NO_CONTENT
@@ -95,7 +97,7 @@ async def test_get_logout_response(cookie_transport: CookieTransport, get_reques
 @pytest.mark.openapi
 def test_get_openapi_login_responses_success(cookie_transport: CookieTransport):
     assert cookie_transport.get_openapi_login_responses_success() == {
-        status.HTTP_204_NO_CONTENT: {"model": None}
+        status.HTTP_307_TEMPORARY_REDIRECT: {"model": None}
     }
 
 

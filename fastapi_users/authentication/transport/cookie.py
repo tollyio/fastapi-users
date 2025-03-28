@@ -31,10 +31,7 @@ class CookieTransport(Transport):
         self.cookie_samesite = cookie_samesite
         self.scheme = APIKeyCookie(name=self.cookie_name, auto_error=False)
 
-    async def get_login_response(self, token: str, request: Request) -> Response:
-        redirect_url = request.session.get("oauth_redirect_url")
-        if redirect_url is not None and redirect_url.endswith("login"):
-            redirect_url = f"{redirect_url}/success"
+    async def get_login_response(self, token: str, redirect_url: Optional[str] = None) -> Response:
         logger.info("Redirect to %s", redirect_url)
 
         redirect = RedirectResponse(
@@ -42,7 +39,7 @@ class CookieTransport(Transport):
         )
         return self._set_login_cookie(redirect, token)
 
-    async def get_logout_response(self, request: Request) -> Response:
+    async def get_logout_response(self) -> Response:
         response = Response(status_code=status.HTTP_204_NO_CONTENT)
         return self._set_logout_cookie(response)
 
@@ -74,7 +71,7 @@ class CookieTransport(Transport):
 
     @staticmethod
     def get_openapi_login_responses_success() -> OpenAPIResponseType:
-        return {status.HTTP_204_NO_CONTENT: {"model": None}}
+        return {status.HTTP_307_TEMPORARY_REDIRECT: {"model": None}}
 
     @staticmethod
     def get_openapi_logout_responses_success() -> OpenAPIResponseType:

@@ -81,11 +81,10 @@ def get_auth_router(
         "/logout", name=f"auth:{backend.name}.logout", responses=logout_responses
     )
     async def logout(
-        request: Request,
         user_token: tuple[models.UP, str] = Depends(get_current_user_token),
         strategy: Strategy[models.UP, models.ID] = Depends(backend.get_strategy),
     ) -> Response:
         user, token = user_token
-        return await backend.logout(strategy, user, token, request)
+        return await backend.logout(strategy, user, token)
 
     return router

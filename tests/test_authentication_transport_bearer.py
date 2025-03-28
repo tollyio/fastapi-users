@@ -14,8 +14,8 @@ def bearer_transport() -> BearerTransport:
 
 @pytest.mark.authentication
 @pytest.mark.asyncio
-async def test_get_login_response(bearer_transport: BearerTransport, get_request: Request):
-    response = await bearer_transport.get_login_response("TOKEN", get_request)
+async def test_get_login_response(bearer_transport: BearerTransport, redirect_url: str):
+    response = await bearer_transport.get_login_response("TOKEN", redirect_url)
 
     assert isinstance(response, JSONResponse)
     assert response.body == b'{"access_token":"TOKEN","token_type":"bearer"}'
@@ -23,9 +23,9 @@ async def test_get_login_response(bearer_transport: BearerTransport, get_request
 
 @pytest.mark.authentication
 @pytest.mark.asyncio
-async def test_get_logout_response(bearer_transport: BearerTransport, get_request: Request):
+async def test_get_logout_response(bearer_transport: BearerTransport):
     with pytest.raises(TransportLogoutNotSupportedError):
-        await bearer_transport.get_logout_response(get_request)
+        await bearer_transport.get_logout_response()
 
 
 @pytest.mark.authentication
