@@ -156,7 +156,7 @@ def get_oauth_router(
             )
 
         # Authenticate
-        response = await backend.login(strategy, user, request)
+        response = await backend.login(strategy, user, redirect_url)
         await user_manager.on_after_login(user, request, response)
         return response
 
