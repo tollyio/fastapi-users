@@ -35,7 +35,7 @@ class CookieTransport(Transport):
         logger.info("Redirect to %s", redirect_url)
 
         redirect = RedirectResponse(
-            url=redirect_url or f"{os.environ['FRONTEND_HOST_NAME']}/login/success"
+            url=redirect_url or "/"
         )
         return self._set_login_cookie(redirect, token)
 
