@@ -1,6 +1,7 @@
 from typing import Optional
 
 import jwt
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from httpx_oauth.integrations.fastapi import OAuth2AuthorizeCallback
 from httpx_oauth.oauth2 import BaseOAuth2, OAuth2Token
@@ -15,6 +16,7 @@ from fastapi_users.router.common import ErrorCode, ErrorModel
 
 STATE_TOKEN_AUDIENCE = "fastapi-users:oauth-state"
 
+logger = logging.getLogger(__name__)
 
 class OAuth2AuthorizeResponse(BaseModel):
     authorization_url: str
@@ -71,6 +73,7 @@ def get_oauth_router(
 
         state_data: dict[str, str] = {}
         if redirect_url:
+            logger.info("Setting redirect URL in state: %s", redirect_url)
             state_data["redirect_url"] = redirect_url
         state = generate_state_token(state_data, state_secret)
         authorization_url = await oauth_client.get_authorization_url(
