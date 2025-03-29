@@ -61,14 +61,17 @@ def get_oauth_router(
     async def authorize(
         request: Request,
         scopes: list[str] = Query(None),
-        redirect_url: Optional[str] = Query(None)
+        redirect_frontend_url: Optional[str] = Query(None)
     ) -> OAuth2AuthorizeResponse:
-        authorize_redirect_url = str(request.url_for(callback_route_name))
+        if redirect_url is not None:
+            authorize_redirect_url = redirect_url
+        else:
+            authorize_redirect_url = str(request.url_for(callback_route_name))
 
         state_data: dict[str, str] = {}
-        if redirect_url:
-            logger.info("Setting redirect URL in state: %s", redirect_url)
-            state_data["redirect_url"] = redirect_url
+        if redirect_frontend_url:
+            logger.info("Setting redirect URL in state: %s", redirect_frontend_url)
+            state_data["redirect_url"] = redirect_frontend_url
         state = generate_state_token(state_data, state_secret)
         authorization_url = await oauth_client.get_authorization_url(
             authorize_redirect_url,
