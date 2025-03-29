@@ -63,10 +63,7 @@ def get_oauth_router(
         scopes: list[str] = Query(None),
         redirect_url: Optional[str] = Query(None)
     ) -> OAuth2AuthorizeResponse:
-        if redirect_url is not None:
-            authorize_redirect_url = redirect_url
-        else:
-            authorize_redirect_url = str(request.url_for(callback_route_name))
+        authorize_redirect_url = str(request.url_for(callback_route_name))
 
         # store request referer url in session
         request.session["oauth_redirect_url"] = request.headers.get("referer", "")
