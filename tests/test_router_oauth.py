@@ -14,7 +14,6 @@ from fastapi_users.router.oauth import (
     get_oauth_associate_router,
     get_oauth_router,
 )
-from starlette.middleware.sessions import SessionMiddleware
 from tests.conftest import (
     AsyncMethodMocker,
     User,
@@ -49,7 +48,6 @@ def app_factory(secret, get_user_manager_oauth, mock_authentication, oauth_clien
         )
 
         app = FastAPI()
-        app.add_middleware(SessionMiddleware, secret_key=secret)
         app.include_router(oauth_router, prefix="/oauth")
         app.include_router(oauth_associate_router, prefix="/oauth-associate")
         return app

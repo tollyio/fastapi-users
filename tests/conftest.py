@@ -8,12 +8,10 @@ from unittest.mock import MagicMock
 import httpx
 import pytest
 from asgi_lifespan import LifespanManager
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Response
 from httpx_oauth.oauth2 import OAuth2
 from pydantic import UUID4, SecretStr
 from pytest_mock import MockerFixture
-from starlette.datastructures import Headers
-from starlette.middleware.sessions import SessionMiddleware
 
 from fastapi_users import exceptions, models, schemas
 from fastapi_users.authentication import AuthenticationBackend, BearerTransport
@@ -533,38 +531,6 @@ class MockStrategy(Strategy[UserModel, IDType]):
 
     async def destroy_token(self, token: str, user: UserModel) -> None:
         return None
-
-
-def build_request(
-    method: str = "GET",
-    server: str = "www.example.com",
-    path: str = "/",
-    headers: dict = None,
-    body: str = None,
-) -> Request:
-    if headers is None:
-        headers = {"referer": "http://www.example.com"}
-    request = Request(
-        {
-            "type": "http",
-            "path": path,
-            "headers": Headers(headers).raw,
-            "http_version": "1.1",
-            "method": method,
-            "scheme": "https",
-            "client": ("127.0.0.1", 8080),
-            "server": (server, 443),
-        }
-    )
-    if body:
-        async def request_body():
-            return body
-        request.body = request_body
-
-    # Add session middleware
-    middleware = SessionMiddleware(app=None, secret_key="test-secret")
-    middleware.process_request(request)
-    return request
 
 
 def get_mock_authentication(name: str):

@@ -65,9 +65,6 @@ def get_oauth_router(
     ) -> OAuth2AuthorizeResponse:
         authorize_redirect_url = str(request.url_for(callback_route_name))
 
-        # store request referer url in session
-        request.session["oauth_redirect_url"] = request.headers.get("referer", "")
-
         state_data: dict[str, str] = {}
         if redirect_url:
             logger.info("Setting redirect URL in state: %s", redirect_url)
