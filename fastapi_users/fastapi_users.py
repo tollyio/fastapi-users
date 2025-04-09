@@ -1,10 +1,12 @@
 from collections.abc import Sequence
 from typing import Generic, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, FastAPI, Request, Response
+from fastapi.responses import JSONResponse
 
 from fastapi_users import models, schemas
 from fastapi_users.authentication import AuthenticationBackend, Authenticator
+from fastapi_users.authentication.authenticator import AuthenticationRequiredError
 from fastapi_users.jwt import SecretType
 from fastapi_users.manager import UserManagerDependency
 from fastapi_users.router import (
@@ -173,4 +175,44 @@ class FastAPIUsers(Generic[models.UP, models.ID]):
             user_update_schema,
             self.authenticator,
             requires_verification,
+        )
+        
+    async def authentication_exception_handler(
+        self, request: Request, exc: AuthenticationRequiredError
+    ) -> Response:
+        """
+        Handle authentication exceptions by using the appropriate transport's error handling.
+        
+        This handler is called when an AuthenticationRequiredError is raised during
+        the authentication process. It uses the transport's handle_authentication_error_response
+        method to properly handle authentication failures (e.g., clearing cookies).
+        
+        :param request: The FastAPI request object
+        :param exc: The AuthenticationRequiredError exception
+        :return: A Response object
+        """
+        # Create a base response
+        response = JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail}
+        )
+        
+        if self.authenticator.backends:
+            response = await self.authenticator.backends[0].transport.handle_authentication_error_response(response)
+            
+        return response
+        
+    def add_auth_exception_handler(self, app: FastAPI) -> None:
+        """
+        Register the authentication exception handler with a FastAPI application.
+        
+        This method should be called after creating your FastAPI app to enable
+        proper handling of authentication errors, including clearing cookies
+        when authentication fails.
+        
+        :param app: The FastAPI application instance
+        """
+        app.add_exception_handler(
+            AuthenticationRequiredError, 
+            self.authentication_exception_handler
         )

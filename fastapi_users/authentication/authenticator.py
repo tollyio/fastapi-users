@@ -37,6 +37,22 @@ EnabledBackendsDependency = DependencyCallable[
 ]
 
 
+class AuthenticationRequiredError(HTTPException):
+    """
+    Exception raised when authentication is required but fails.
+    
+    This custom exception includes the backend that was used for authentication,
+    allowing the exception handler to use the appropriate transport for the response.
+    """
+    def __init__(
+        self, 
+        status_code: int = status.HTTP_401_UNAUTHORIZED,
+        detail: str = "Unauthorized"
+    ):
+        super().__init__(status_code=status_code, detail=detail)
+        
+
+
 class Authenticator(Generic[models.UP, models.ID]):
     """
     Provides dependency callables to retrieve authenticated user.
@@ -189,7 +205,7 @@ class Authenticator(Generic[models.UP, models.ID]):
             ):
                 user = None
         if not user and not optional:
-            raise HTTPException(status_code=status_code)
+            raise AuthenticationRequiredError(status_code=status_code)
         return user, token
 
     def _get_dependency_signature(

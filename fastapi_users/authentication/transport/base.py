@@ -17,6 +17,9 @@ class Transport(Protocol):
 
     async def get_logout_response(self) -> Response: ...  # pragma: no cover
 
+    async def handle_authentication_error_response(self, response: Response) -> Response: 
+        return response
+
     @staticmethod
     def get_openapi_login_responses_success() -> OpenAPIResponseType:
         """Return a dictionary to use for the openapi responses route parameter."""

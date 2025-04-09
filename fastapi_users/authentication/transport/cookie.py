@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 from fastapi import Request, Response, status
 from fastapi.security import APIKeyCookie
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi_users.authentication.transport.base import Transport
 from fastapi_users.openapi import OpenAPIResponseType
 
@@ -42,6 +42,15 @@ class CookieTransport(Transport):
     async def get_logout_response(self) -> Response:
         response = Response(status_code=status.HTTP_204_NO_CONTENT)
         return self._set_logout_cookie(response)
+        
+    async def handle_authentication_error_response(self, response: Response) -> Response:
+        """
+        Handle authentication errors by clearing the cookie.
+        
+        This method is called when authentication fails, ensuring that
+        invalid cookies are cleared from the client.
+        """
+        self._set_logout_cookie(response)
 
     def _set_login_cookie(self, response: Response, token: str) -> Response:
         response.set_cookie(
