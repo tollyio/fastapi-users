@@ -18,6 +18,15 @@ class Transport(Protocol):
     async def get_logout_response(self) -> Response: ...  # pragma: no cover
 
     async def handle_authentication_error_response(self, response: Response) -> Response: 
+        """
+        Process a response for authentication errors.
+        
+        This method should modify the response as needed (e.g., clearing cookies)
+        and return the modified response.
+        
+        :param response: The response to modify
+        :return: The modified response
+        """
         return response
 
     @staticmethod

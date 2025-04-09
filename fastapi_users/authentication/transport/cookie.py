@@ -49,8 +49,11 @@ class CookieTransport(Transport):
         
         This method is called when authentication fails, ensuring that
         invalid cookies are cleared from the client.
+        
+        :param response: The response to modify
+        :return: The modified response with cleared cookie
         """
-        self._set_logout_cookie(response)
+        return self._set_logout_cookie(response)
 
     def _set_login_cookie(self, response: Response, token: str) -> Response:
         response.set_cookie(
