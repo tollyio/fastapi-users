@@ -47,9 +47,11 @@ class AuthenticationRequiredError(HTTPException):
     def __init__(
         self, 
         status_code: int = status.HTTP_401_UNAUTHORIZED,
-        detail: str = "Unauthorized"
+        detail: str = "Unauthorized",
+        backend: Optional[AuthenticationBackend] = None
     ):
         super().__init__(status_code=status_code, detail=detail)
+        self.backend = backend
         
 
 
@@ -195,6 +197,7 @@ class Authenticator(Generic[models.UP, models.ID]):
                         break
 
         status_code = status.HTTP_401_UNAUTHORIZED
+        failed_backend = None
         if user:
             status_code = status.HTTP_403_FORBIDDEN
             if active and not user.is_active:
@@ -204,8 +207,14 @@ class Authenticator(Generic[models.UP, models.ID]):
                 verified and not user.is_verified or superuser and not user.is_superuser
             ):
                 user = None
+        elif token is not None:
+            # If we have a token but no user, we know which backend failed
+            for backend in self.backends:
+                if backend in enabled_backends and kwargs.get(name_to_variable_name(backend.name)) == token:
+                    failed_backend = backend
+                    break
         if not user and not optional:
-            raise AuthenticationRequiredError(status_code=status_code)
+            raise AuthenticationRequiredError(status_code=status_code, backend=failed_backend)
         return user, token
 
     def _get_dependency_signature(

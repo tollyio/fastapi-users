@@ -197,9 +197,15 @@ class FastAPIUsers(Generic[models.UP, models.ID]):
             content={"detail": exc.detail}
         )
         
-        if self.authenticator.backends:
-            response = await self.authenticator.backends[0].transport.handle_authentication_error_response(response)
-            
+        # If we know which backend failed, use its transport
+        if exc.backend is not None:
+            response = await exc.backend.transport.handle_authentication_error_response(response)
+        else:
+            # Otherwise, let all transports handle the response
+            # This ensures that any transport-specific cleanup (like cookie clearing) happens
+            for backend in self.authenticator.backends:
+                response = await backend.transport.handle_authentication_error_response(response)
+                
         return response
         
     def add_auth_exception_handler(self, app: FastAPI) -> None:
